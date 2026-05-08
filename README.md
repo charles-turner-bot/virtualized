@@ -4,21 +4,23 @@
 # virtualized
 
 An ongoing experiment to compare array virtualization in GDAL and in
-xarray/VirtualiZarr. This repo exists purely to describe two ways of
-connecting to a virtualized-netcdf store, with various software tools.
+xarray/VirtualiZarr. This fork adapts Mike Sumner's original
+BRAN-focused prototype to public eReefs GBR4 data, while keeping the
+same basic virtualized-netcdf pattern and tooling.
 
 ## A virtualized store
 
 In directory
-[remote/](https://github.com/mdsumner/virtualized/tree/main/remote/ocean_temp_2023.parq)
+[remote/](https://github.com/charles-turner-bot/virtualized/tree/main/remote/ocean_temp_2023.parq)
 there is a nested Parquet representation of a modelled ocean variable
-`ocean_temp`.
+`ocean_temp`. This BRAN example is Mike's original pattern that the
+eReefs example below adapts.
 
 Note that for actually connecting to this we need the github raw link,
 which isn’t a valid link in a browser but works for connection, that
 looks like this:
 
-    https://raw.githubusercontent.com/mdsumner/virtualized/refs/heads/main/remote/ocean_temp_2023.parq
+    https://raw.githubusercontent.com/charles-turner-bot/virtualized/refs/heads/main/remote/ocean_temp_2023.parq
 
 The array `ocean_temp` has dimensions `Time,st_ocean,yt_ocean,xt_ocean`
 of shape `(5599, 51, 1500, 3600)`. This consists of 180 *monthly, with
@@ -41,9 +43,9 @@ server](https://thredds.nci.org.au/thredds/catalog/gb6/BRAN/BRAN2023/catalog.htm
 ## An eReefs / GBR4 example
 
 There is now a matching eReefs example in
-[remote/gbr4_temp_2024-01-16_2024-01-17.parq](https://github.com/mdsumner/virtualized/tree/main/remote/gbr4_temp_2024-01-16_2024-01-17.parq).
-This one virtualizes the `temp` variable from two public GBR4
-hydrodynamic files on the [NCI THREDDS
+[remote/gbr4_temp_2024-01-16_2024-01-17.parq](https://github.com/charles-turner-bot/virtualized/tree/main/remote/gbr4_temp_2024-01-16_2024-01-17.parq).
+This is a direct adaptation of Mike's BRAN workflow to the public
+eReefs GBR4 hydrodynamic files on the [NCI THREDDS
 catalogue](https://thredds.nci.org.au/thredds/catalog/fx3/gbr4_v2/catalog.html):
 
 - `gbr4_simple_2024-01-16.nc`
@@ -67,7 +69,7 @@ and opened with xarray in the same way as the BRAN example:
 import xarray
 
 ds = xarray.open_dataset(
-    "https://raw.githubusercontent.com/mdsumner/virtualized/refs/heads/main/remote/gbr4_temp_2024-01-16_2024-01-17.parq",
+    "https://raw.githubusercontent.com/charles-turner-bot/virtualized/refs/heads/main/remote/gbr4_temp_2024-01-16_2024-01-17.parq",
     engine="kerchunk",
     chunks={},
 )
