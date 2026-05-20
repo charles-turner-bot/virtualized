@@ -96,40 +96,37 @@ print(f"wrote {outfile}")
 
 def rewrite_parquet_paths(root: Path, strip_prefix: str, add_prefix: str) -> int:
     try:
-        import pyarrow as pa
-        import pyarrow.parquet as pq
+        import polars as pl
     except ImportError as exc:
         raise SystemExit(
-            "pyarrow is required for parquet path rewriting; install it or rerun with --no-rewrite-refs"
+            "polars is required for parquet path rewriting; install it or rerun with --no-rewrite-refs"
         ) from exc
+
+    if strip_prefix == add_prefix:
+        return 0
 
     updates = 0
     for parquet_file in root.rglob("*.parq"):
-        table = pq.read_table(parquet_file)
-        if "path" not in table.column_names:
+        refs = pl.read_parquet(parquet_file)
+        if "path" not in refs.columns:
             continue
 
-        paths = table["path"].to_pylist()
-        new_paths = []
-        changed = False
-        for value in paths:
-            if isinstance(value, str) and value.startswith(strip_prefix):
-                new_value = add_prefix + value[len(strip_prefix) :]
-                changed = changed or new_value != value
-                new_paths.append(new_value)
-            else:
-                new_paths.append(value)
-
-        if not changed:
+        has_updates = refs.select(
+            pl.col("path").str.starts_with(strip_prefix).fill_null(False).any()
+        ).item()
+        if not has_updates:
             continue
 
-        columns = []
-        for name in table.column_names:
-            if name == "path":
-                columns.append(pa.array(new_paths))
-            else:
-                columns.append(table[name])
-        pq.write_table(pa.table(columns, names=table.column_names), parquet_file)
+        refs.with_columns(
+            pl.when(pl.col("path").str.starts_with(strip_prefix).fill_null(False))
+            .then(
+                pl.concat_str(
+                    [pl.lit(add_prefix), pl.col("path").str.slice(len(strip_prefix))]
+                )
+            )
+            .otherwise(pl.col("path"))
+            .alias("path")
+        ).write_parquet(parquet_file)
         updates += 1
 
     return updates
