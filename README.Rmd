@@ -30,19 +30,21 @@ The store was built by using [VirtualiZarr](https://virtualizarr.readthedocs.io/
 
 ## An eReefs / GBR4 example
 
-There is now a matching eReefs example in [remote/gbr4_temp_2024-01-16_2024-01-17.parq](https://github.com/charles-turner-bot/virtualized/tree/main/remote/gbr4_temp_2024-01-16_2024-01-17.parq). This is a direct adaptation of Mike's BRAN workflow to the public eReefs GBR4 hydrodynamic files on the [NCI THREDDS catalogue](https://thredds.nci.org.au/thredds/catalog/fx3/gbr4_v2/catalog.html):
+There is now a matching eReefs example in [remote/gbr4_temp_2024-01-16_2024-01-17.parq](https://github.com/charles-turner-bot/virtualized/tree/main/remote/gbr4_temp_2024-01-16_2024-01-17.parq). This follows the same pattern as Mike's BRAN workflow, but for eReefs GBR4 files prepared on disk on NCI and then rewritten to public THREDDS URLs for publication. The checked-in files under `remote/` are just a small published demo index, not the working area on Gadi.
 
-- `gbr4_simple_2024-01-16.nc`
-- `gbr4_simple_2024-01-17.nc`
+- local source files on Gadi: `/g/data/fx3/gbr4_v2/gbr4_simple_2024-01-16.nc`, `/g/data/fx3/gbr4_v2/gbr4_simple_2024-01-17.nc`
+- public equivalents after ref rewriting: `https://thredds.nci.org.au/thredds/fileServer/fx3/gbr4_v2/gbr4_simple_2024-01-16.nc`, `https://thredds.nci.org.au/thredds/fileServer/fx3/gbr4_v2/gbr4_simple_2024-01-17.nc`
 
 The resulting logical array has dimensions `time,k,j,i` with shape `(48, 47, 180, 600)`.
 
-The store can be rebuilt directly from the public THREDDS HTTPServer URLs with:
+The store can be rebuilt from the on-disk files and rewritten to THREDDS refs with:
 
 ```python
 python py/ereefs_var.py temp remote/gbr4_temp_2024-01-16_2024-01-17.parq \
-  https://thredds.nci.org.au/thredds/fileServer/fx3/gbr4_v2/gbr4_simple_2024-01-16.nc \
-  https://thredds.nci.org.au/thredds/fileServer/fx3/gbr4_v2/gbr4_simple_2024-01-17.nc
+  /g/data/fx3/gbr4_v2/gbr4_simple_2024-01-16.nc \
+  /g/data/fx3/gbr4_v2/gbr4_simple_2024-01-17.nc \
+  --strip-prefix /g/data/fx3/gbr4_v2/ \
+  --add-prefix https://thredds.nci.org.au/thredds/fileServer/fx3/gbr4_v2/
 ```
 
 and opened with xarray in the same way as the BRAN example:
